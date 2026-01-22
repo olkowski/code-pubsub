@@ -7,6 +7,9 @@ import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
 
+import jakarta.enterprise.context.ApplicationScoped;
+
+@ApplicationScoped
 public class EnvioEmailService {
     public void enviarEmail(String toEmail, String subject, String body) throws Exception {
         Email from = new Email(toEmail);
