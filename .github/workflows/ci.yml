@@ -1,25 +1,133 @@
-## A basic GitHub Actions workflow for your Quarkus application.
-
-name: CI build
+name: CI/CD - GCP Pub/Sub Consumer
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
+
+env:
+  GCP_PROJECT_ID: elated-bison-474212-v4
+  GCP_REGION: us-central1
+  GCP_PUBSUB_TOPIC: cloud-scheduler
+  GCP_PUBSUB_SUBSCRIPTION: cloud-scheduler-sub
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: 21
-          distribution: temurin
-          cache: maven
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
 
-      - name: Build
-        run: ./mvnw verify -B
+      - name: Build with Maven
+        run: ./mvnw clean package -B -DskipTests
+        
+      - name: Run tests
+        run: ./mvnw test -B
+      
+      - name: Build native image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: ./mvnw package -Dnative -B -DskipTests || true
+
+      - name: Upload artifacts
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: quarkus-app-jvm
+          path: target/quarkus-app/
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Authenticate to Google Cloud (Workload Identity)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account_email: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+        continue-on-error: true
+
+      - name: Authenticate to Google Cloud (Service Account JSON - Fallback)
+        if: failure()
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+        continue-on-error: true
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Configure Docker for GCP
+        run: |
+          gcloud auth configure-docker gcr.io
+
+      - name: Build and push Docker image
+        run: |
+          IMAGE_TAG="gcr.io/${{ env.GCP_PROJECT_ID }}/code-pubsub:${{ github.sha }}"
+          IMAGE_LATEST="gcr.io/${{ env.GCP_PROJECT_ID }}/code-pubsub:latest"
+          
+          docker build -f src/main/docker/Dockerfile.jvm -t $IMAGE_TAG -t $IMAGE_LATEST .
+          docker push $IMAGE_TAG
+          docker push $IMAGE_LATEST
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy code-pubsub \
+            --image gcr.io/${{ env.GCP_PROJECT_ID }}/code-pubsub:${{ github.sha }} \
+            --platform managed \
+            --region ${{ env.GCP_REGION }} \
+            --allow-unauthenticated \
+            --set-env-vars GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }},GCP_PUBSUB_TOPIC=${{ env.GCP_PUBSUB_TOPIC }},GCP_PUBSUB_SUBSCRIPTION=${{ env.GCP_PUBSUB_SUBSCRIPTION }} \
+            --memory 512Mi \
+            --cpu 1 \
+            --timeout 3600
+
+      - name: Display service URL
+        run: |
+          SERVICE_URL=$(gcloud run services describe code-pubsub --platform managed --region ${{ env.GCP_REGION }} --format='value(status.url)')
+          echo "Service deployed at: $SERVICE_URL"
+          echo "Health check: $SERVICE_URL/messages/health"
+          echo "Config endpoint: $SERVICE_URL/messages/config"
+
+  notify:
+    needs: [build, deploy]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Check deployment status
+        run: |
+          if [ "${{ needs.deploy.result }}" == "success" ]; then
+            echo "✅ Deployment successful!"
+          elif [ "${{ needs.deploy.result }}" == "skipped" ]; then
+            echo "⏭️ Deployment skipped (not on main branch)"
+          else
+            echo "❌ Deployment failed!"
+            exit 1
+          fi
