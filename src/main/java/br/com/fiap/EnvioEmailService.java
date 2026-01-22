@@ -13,7 +13,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 public class EnvioEmailService {
     public void enviarEmail(String toEmail, String subject, String body) throws Exception {
         Email from = new Email(toEmail);
-        Email to = new Email("test@example.com");
+        Email to = new Email(toEmail);
         Content content = new Content("text/plain", body);
         Mail mail = new Mail(from, subject, to, content);
 
