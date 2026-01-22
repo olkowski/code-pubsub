@@ -66,7 +66,7 @@ public class PubSubMessageConsumer {
                         Log.infof("  ID: %s", messageId);
                         Log.infof("  Dados: %s", messageData);
                         Log.infof("========================================");
-                        
+
                         // Acknowledge da mensagem
                         consumer.ack();
                         Log.infof("✅ Mensagem %s reconhecida", messageId);

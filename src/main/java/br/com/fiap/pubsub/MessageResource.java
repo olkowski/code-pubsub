@@ -62,7 +62,7 @@ public class MessageResource {
             String projectId = gcpConfig.getProjectId();
             String topic = gcpConfig.getTopic();
             String subscription = gcpConfig.getSubscription();
-            
+
             String debugInfo = "{" +
                     "\"status\": \"Configuração carregada\"," +
                     "\"projectId\": \"" + projectId + "\"," +
@@ -71,7 +71,7 @@ public class MessageResource {
                     "\"fullTopicPath\": \"projects/" + projectId + "/topics/" + topic + "\"," +
                     "\"fullSubscriptionPath\": \"projects/" + projectId + "/subscriptions/" + subscription + "\"" +
                     "}";
-            
+
             Log.infof("Debug Info: %s", debugInfo);
             return Response.ok(debugInfo).build();
         } catch (Exception e) {
