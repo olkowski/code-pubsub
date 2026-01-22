@@ -9,7 +9,7 @@ on:
 env:
   GCP_PROJECT_ID: elated-bison-474212-v4
   GCP_REGION: us-central1
-  GCP_PUBSUB_TOPIC: cloud-scheduler
+  GCP_PUBSUB_TOPIC: cloud-cheduler
   GCP_PUBSUB_SUBSCRIPTION: cloud-scheduler-sub
 
 jobs:

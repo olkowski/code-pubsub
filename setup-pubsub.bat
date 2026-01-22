@@ -4,7 +4,7 @@ REM Script de setup do GCP Pub/Sub para o projeto (Windows)
 REM Dados do projeto
 set GCP_PROJECT_ID=elated-bison-474212-v4
 set GCP_REGION=us-central1
-set GCP_PUBSUB_TOPIC=cloud-scheduler
+set GCP_PUBSUB_TOPIC=cloud-cheduler
 set GCP_PUBSUB_SUBSCRIPTION=cloud-scheduler-sub
 
 echo.

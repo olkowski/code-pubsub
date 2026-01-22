@@ -6,7 +6,7 @@ Aplicação Quarkus para consumir e produzir mensagens do Google Cloud Pub/Sub.
 
 - **Projeto GCP:** `elated-bison-474212-v4`
 - **Região:** `us-central1`
-- **Tópico Pub/Sub:** `projects/elated-bison-474212-v4/topics/cloud-scheduler`
+- **Tópico Pub/Sub:** `projects/elated-bison-474212-v4/topics/cloud-cheduler`
 - **Subscription:** `cloud-scheduler-sub`
 
 ## 🚀 Quick Start
@@ -20,7 +20,7 @@ gcloud auth application-default login
 # Configurar variáveis de ambiente
 export GCP_PROJECT_ID=elated-bison-474212-v4
 export GCP_REGION=us-central1
-export GCP_PUBSUB_TOPIC=cloud-scheduler
+export GCP_PUBSUB_TOPIC=cloud-cheduler
 export GCP_PUBSUB_SUBSCRIPTION=cloud-scheduler-sub
 ```
 
@@ -148,7 +148,7 @@ docker build -f src/main/docker/Dockerfile.jvm -t code-pubsub:latest .
 docker run -i --rm \
   -p 8080:8080 \
   -e GCP_PROJECT_ID=elated-bison-474212-v4 \
-  -e GCP_PUBSUB_TOPIC=cloud-scheduler \
+  -e GCP_PUBSUB_TOPIC=cloud-cheduler \
   -e GCP_PUBSUB_SUBSCRIPTION=cloud-scheduler-sub \
   code-pubsub:latest
 ```
@@ -161,7 +161,7 @@ gcloud run deploy code-pubsub \
   --platform managed \
   --region us-central1 \
   --allow-unauthenticated \
-  --set-env-vars GCP_PROJECT_ID=elated-bison-474212-v4,GCP_PUBSUB_TOPIC=cloud-scheduler,GCP_PUBSUB_SUBSCRIPTION=cloud-scheduler-sub \
+  --set-env-vars GCP_PROJECT_ID=elated-bison-474212-v4,GCP_PUBSUB_TOPIC=cloud-cheduler,GCP_PUBSUB_SUBSCRIPTION=cloud-scheduler-sub \
   --memory 512Mi \
   --cpu 1
 ```
@@ -197,7 +197,7 @@ gcloud run logs read code-pubsub --limit 0 --follow
 ### Conexão com Pub/Sub falha
 ```bash
 # Verificar tópico
-gcloud pubsub topics describe projects/elated-bison-474212-v4/topics/cloud-scheduler
+gcloud pubsub topics describe projects/elated-bison-474212-v4/topics/cloud-cheduler
 
 # Verificar subscription
 gcloud pubsub subscriptions describe cloud-scheduler-sub

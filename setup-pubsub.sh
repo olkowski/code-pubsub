@@ -4,7 +4,7 @@
 # Dados do projeto
 export GCP_PROJECT_ID="elated-bison-474212-v4"
 export GCP_REGION="us-central1"
-export GCP_PUBSUB_TOPIC="cloud-scheduler"
+export GCP_PUBSUB_TOPIC="cloud-cheduler"
 export GCP_PUBSUB_SUBSCRIPTION="cloud-scheduler-sub"
 
 echo "=========================================="

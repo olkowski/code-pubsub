@@ -135,7 +135,7 @@ docker build -f src/main/docker/Dockerfile.jvm -t code-pubsub:latest .
 # Run da imagem
 docker run -p 8080:8080 \
   -e GCP_PROJECT_ID=elated-bison-474212-v4 \
-  -e GCP_PUBSUB_TOPIC=cloud-scheduler \
+  -e GCP_PUBSUB_TOPIC=cloud-cheduler \
   -e GCP_PUBSUB_SUBSCRIPTION=cloud-scheduler-sub \
   code-pubsub:latest
 ```
