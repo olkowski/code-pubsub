@@ -21,11 +21,14 @@ public class PubSubMessageConsumer {
     private final AtomicReference<Subscriber> subscriberRef = new AtomicReference<>();
 
     void onStart(@Observes StartupEvent ev) {
+        Log.info("========================================");
         Log.info("Iniciando Pub/Sub Consumer...");
+        Log.info("========================================");
         try {
             startConsuming();
         } catch (Exception e) {
-            Log.errorf(e, "Erro ao iniciar Pub/Sub Consumer");
+            Log.errorf(e, "❌ Erro ao iniciar Pub/Sub Consumer");
+            throw new RuntimeException("Falha na inicialização do Consumer", e);
         }
     }
 
@@ -42,18 +45,35 @@ public class PubSubMessageConsumer {
         String projectId = gcpConfig.getProjectId();
         String subscriptionId = gcpConfig.getSubscription();
 
-        Log.infof("Conectando ao Pub/Sub - Projeto: %s, Subscription: %s", projectId, subscriptionId);
+        Log.infof("========================================");
+        Log.infof("Conectando ao Pub/Sub");
+        Log.infof("  Projeto: %s", projectId);
+        Log.infof("  Subscription: %s", subscriptionId);
+        Log.infof("========================================");
 
         ProjectSubscriptionName subscriptionName = ProjectSubscriptionName.of(projectId, subscriptionId);
+        Log.infof("Full Subscription Path: %s", subscriptionName.toString());
 
         // Cria um subscriber
         Subscriber subscriber = Subscriber
                 .newBuilder(subscriptionName, (com.google.cloud.pubsub.v1.MessageReceiver) (message, consumer) -> {
-                    // Processa a mensagem
-                    String messageData = message.getData().toStringUtf8();
-                    Log.infof("📨 Mensagem recebida: %s", messageData);
-                    // Acknowledge da mensagem
-                    consumer.ack();
+                    try {
+                        // Processa a mensagem
+                        String messageData = message.getData().toStringUtf8();
+                        String messageId = message.getMessageId();
+                        Log.infof("========================================");
+                        Log.infof("📨 Mensagem recebida!");
+                        Log.infof("  ID: %s", messageId);
+                        Log.infof("  Dados: %s", messageData);
+                        Log.infof("========================================");
+                        
+                        // Acknowledge da mensagem
+                        consumer.ack();
+                        Log.infof("✅ Mensagem %s reconhecida", messageId);
+                    } catch (Exception e) {
+                        Log.errorf(e, "❌ Erro ao processar mensagem");
+                        consumer.nack();
+                    }
                 })
                 .setParallelPullCount(4)
                 .build();
@@ -63,7 +83,9 @@ public class PubSubMessageConsumer {
 
         // Inicia o subscriber
         subscriber.startAsync().awaitRunning();
+        Log.info("========================================");
         Log.info("✅ Pub/Sub Consumer iniciado e aguardando mensagens");
+        Log.info("========================================");
     }
 
     public void stopConsuming() throws Exception {

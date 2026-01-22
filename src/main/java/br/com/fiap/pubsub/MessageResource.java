@@ -54,4 +54,30 @@ public class MessageResource {
                     .entity("{\"error\": \"" + e.getMessage() + "\"}").build();
         }
     }
+
+    @GET
+    @Path("/debug")
+    public Response debug() {
+        try {
+            String projectId = gcpConfig.getProjectId();
+            String topic = gcpConfig.getTopic();
+            String subscription = gcpConfig.getSubscription();
+            
+            String debugInfo = "{" +
+                    "\"status\": \"Configuração carregada\"," +
+                    "\"projectId\": \"" + projectId + "\"," +
+                    "\"topic\": \"" + topic + "\"," +
+                    "\"subscription\": \"" + subscription + "\"," +
+                    "\"fullTopicPath\": \"projects/" + projectId + "/topics/" + topic + "\"," +
+                    "\"fullSubscriptionPath\": \"projects/" + projectId + "/subscriptions/" + subscription + "\"" +
+                    "}";
+            
+            Log.infof("Debug Info: %s", debugInfo);
+            return Response.ok(debugInfo).build();
+        } catch (Exception e) {
+            Log.errorf(e, "Erro no debug");
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("{\"error\": \"" + e.getMessage() + "\"}").build();
+        }
+    }
 }
