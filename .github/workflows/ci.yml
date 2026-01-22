@@ -64,19 +64,10 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Authenticate to Google Cloud (Workload Identity)
+      - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
-          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
-        continue-on-error: true
-
-      - name: Authenticate to Google Cloud (Service Account JSON - Fallback)
-        if: failure()
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
-        continue-on-error: true
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
