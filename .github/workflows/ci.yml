@@ -64,6 +64,9 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
+      - name: Build with Maven (for Docker)
+        run: ./mvnw clean package -B -DskipTests
+
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
