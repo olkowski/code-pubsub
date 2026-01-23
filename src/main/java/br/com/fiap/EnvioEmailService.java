@@ -16,8 +16,9 @@ public class EnvioEmailService {
         Email to = new Email(toEmail);
         Content content = new Content("text/plain", body);
         Mail mail = new Mail(from, subject, to, content);
-
-        SendGrid sg = new SendGrid(System.getenv("SENDGRID_API_KEY"));
+        String sendgrid = System.getenv("SENDGRID_API_KEY");
+        System.out.println("sendgrid: " + sendgrid);
+        SendGrid sg = new SendGrid(sendgrid);
         // sg.setDataResidency("eu");
         // uncomment the above line if you are sending mail using a regional EU subuser
         Request request = new Request();
