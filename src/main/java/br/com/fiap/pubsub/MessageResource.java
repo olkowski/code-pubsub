@@ -35,7 +35,7 @@ public class MessageResource {
     @GET
     @Path("/health")
     public Response health() {
-        return Response.ok("{\"status\": \"OK\", \"service\": \"Pub/Sub Consumer/Producer\"}").build();
+        return Response.ok("{\"status\": \"OK\", \"service\": \"Pub/Sub Consumer/Producer 2\"}").build();
     }
 
     @GET
